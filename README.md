@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 wsus Cookbook
 =============
 TODO: Enter the cookbook description here.
@@ -66,3 +67,9 @@ e.g.
 License and Authors
 -------------------
 Authors: TODO: List authors
+=======
+wsus
+====
+
+Chef cookbooks to deal with setting up WSUS (Windows Server Update Service) server
+>>>>>>> bc42b36d9e31cdfd8e84766dab34700dcecf20a4
