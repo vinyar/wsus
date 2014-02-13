@@ -10,13 +10,20 @@
 powershell_script "install wsus prereqs" do
 	code <<-EOH
 	"web-server", "Web-Asp-Net", "Web-Windows-Auth", "Web-Metabase", "File-Services" | foreach {if (!(Get-WindowsFeature $_)){add-windowsfeature $_}}
-	 # add-windowsfeature web-server
-	 # add-windowsfeature Web-Asp-Net
-	 # add-windowsfeature Web-Windows-Auth
-	 # add-windowsfeature Web-Metabase
-	 # add-windowsfeature File-Services
 	 EOH
 end
+
+# old code
+# powershell_script "install wsus prereqs" do
+# 	code <<-EOH
+# 	 add-windowsfeature web-server
+# 	 add-windowsfeature Web-Asp-Net
+# 	 add-windowsfeature Web-Windows-Auth
+# 	 add-windowsfeature Web-Metabase
+# 	 add-windowsfeature File-Services
+# 	 EOH
+# end
+
 
 # windows feature dump in case server is completely blank:
 # File-Services
@@ -60,6 +67,8 @@ end
 
 windows_package "WSUS30-KB972455-x64.exe" do
 	# default logs go to C:\Users\Opscode\AppData\Local\Temp\WSUSSetup.log - doesnt seem to be a way to change it
+	# notes http://technet.microsoft.com/en-us/library/dd939814(WS.10).aspx
+	# notes http://technet.microsoft.com/en-us/library/dd939811(v=ws.10).aspx#wssetup
 	action :install
 	installer_type :custom
 	source 'c:/chef/WSUS30-KB972455-x64.exe'
@@ -68,10 +77,7 @@ windows_package "WSUS30-KB972455-x64.exe" do
 	# other stuff CONSOLE_INSTALL=0 ? ENABLE_INVENTORY ? 
 	
 	# does not seem to work at the moment.
-	# not_if "cat C:\\Users\\Opscode\\AppData\\Local\\Temp\\WSUSSetup.log |grep -i 'Windows Server Update Services setup completed successfully'"
+	not_if "type C:\\Users\\Opscode\\AppData\\Local\\Temp\\WSUSSetup.log |grep -i 'Windows Server Update Services setup completed successfully'"
 	# require 'pry';binding.pry
 end
 
-
-# ## Install Windows Server Update Services
-# windows_feature "OOB-WSUS"
