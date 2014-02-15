@@ -59,11 +59,11 @@ end
 # RSAT-Web-Server
 # Windows-Internal-DB
 
+# Installation of the WSUS 3.0
 remote_file "c:/chef/WSUS30-KB972455-x64.exe" do
   action :create
   source "http://download.microsoft.com/download/B/0/6/B06A69C3-CF97-42CF-86BF-3C59D762E0B2/WSUS30-KB972455-x64.exe"
 end
-
 
 windows_package "WSUS30-KB972455-x64.exe" do
 	# default logs go to C:\Users\Opscode\AppData\Local\Temp\WSUSSetup.log - doesnt seem to be a way to change it
@@ -76,8 +76,24 @@ windows_package "WSUS30-KB972455-x64.exe" do
 	# options with SQL "/q CONTENT_LOCAL=1 CONTENT_DIR=C:\\WSUS SQLINSTANCE_NAME=%COMPUTERNAME% DEFAULT_WEBSITE=0 CREATE_DATABASE=1 PREREQ_CHECK_LOG=C:\\chef\\bob.txt MU_ROLLUP=0"
 	# other stuff CONSOLE_INSTALL=0 ? ENABLE_INVENTORY ? 
 	
-	# does not seem to work at the moment.
+	# test to see if windows_package idempotence is working - if not use below not_if
 	not_if "type C:\\Users\\Opscode\\AppData\\Local\\Temp\\WSUSSetup.log |grep -i 'Windows Server Update Services setup completed successfully'"
 	# require 'pry';binding.pry
 end
 
+
+# Installation of the Reporting service for WSUS
+
+remote_file "c:/chef/ReportViewer.exe" do
+	# file location: http://www.microsoft.com/en-us/download/details.aspx?id=577
+  source "http://download.microsoft.com/download/0/9/d/09d3df2d-abec-4ebe-bc64-260b05a30feb/ReportViewer.exe"
+end
+
+windows_package "ReportViewer.exe" do
+    action :install
+    # installer_type :custom
+    source 'c:/chef/ReportViewer.exe'
+    options "/q /l c:\\chef\\ReportViewer_install.log"
+    # not_if "type C:\\Users\\Opscode\\AppData\\Local\\Temp\\WSUSSetup.log |grep -i 'Windows Server Update Services setup completed successfully'"
+    # require 'pry';binding.pry
+end

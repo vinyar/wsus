@@ -11,3 +11,12 @@
 
 # default['wsus']['installer_switches']        = '/q CONTENT_LOCAL=1 CONTENT_DIR=E:\WSUS DEFAULT_WEBSITE=0 CREATE_DATABASE=1 SQLINSTANCE_NAME=%COMPUTERNAME%'
 
+
+# Allowed settings - server or client
+default['wsus']['installation_target'] = false
+default['wsus']['wsus_server_url'] = nil
+
+
+
+default['wsus']['administrators'] = 'opscode'
+default['wsus']['reporters'] = ''
