@@ -21,9 +21,11 @@ powershell_script "configure_wsus_server" do
     # per http://msdn.microsoft.com/en-us/library/aa349325(v=vs.85).aspx
     $w  = [reflection.assembly]::LoadWithPartialName("Microsoft.UpdateServices.Administration")
     $ww = [Microsoft.UpdateServices.Administration.AdminProxy]::getUpdateServer("localhost",$false,8530)
+# for future updates
+# $updatescope = New-Object Microsoft.UpdateServices.Administration.UpdateScope
 
-    $Configuration   = $ww.GetConfiguration();
-    $Synchronization = $ww.GetSubscription();
+    $Configuration   = $ww.GetConfiguration()
+    $Synchronization = $ww.GetSubscription()
 
     # Tells it to Sync from MS
     $Configuration.SyncFromMicrosoftUpdate = $true ## Change to attribute (true for master/ false for slave)
@@ -47,15 +49,63 @@ powershell_script "configure_wsus_server" do
     $Synchronization.SynchronizeAutomaticallyTimeOfDay = '00:01:00'
 
     # Set the WSUS Server Syncronisation Number of Syncs per day 
-    $wsusSub.NumberOfSynchronizationsPerDay="24"
+    $Synchronization.NumberOfSynchronizationsPerDay="24"
 
-    # Change products
-    # TODO
+    # Set WSUS to download available categories
+    $Synchronization.StartSynchronizationForCategoryOnly()
+
+# Change products
+  # $Synchronization.GetUpdateCategories() | select title
+  $bla = $Synchronization.GetUpdateCategories() | ? {$_.title -like 'Windows Server 2008 R2'}
+  $test = New-Object Microsoft.UpdateServices.Administration.UpdateCategoryCollection
+  $test.AddRange($bla)
+  $Synchronization.SetUpdateCategories($test)
+
+# Change Classifications
+$Synchronization.SetUpdateClassifications()
+    # 'Critical Updates',
+    # 'Definition Updates',
+    # 'Feature Packs',
+    # 'Security Updates',
+    # 'Service Packs',
+    # 'Update Rollups',
+    # 'Updates'
+$coll = New-Object -TypeName Microsoft.UpdateServices.Administration.UpdateClassificationCollection
+
 
     # Change Product Classification
     # TODO
     $Synchronization.GetUpdateClassifications()
-    $Synchronization.SetUpdateClassifications()
+    $Synchronization.UpdateClassificationCollection() # ??
+    ============
+    http://smsagent.wordpress.com/tag/wsus-powershell/
+    ============
+    # Configure Default Approval Rule
+ 
+$wsus = [Microsoft.UpdateServices.Administration.AdminProxy]::GetUpdateServer();
+if ($DefaultApproval -eq $True)
+{
+write-host 'Configuring default automatic approval rule'
+[void][reflection.assembly]::LoadWithPartialName("Microsoft.UpdateServices.Administration")
+$rule = $wsus.GetInstallApprovalRules() | Where {
+    $_.Name -eq "Default Automatic Approval Rule"}
+$class = $wsus.GetUpdateClassifications() | ? {$_.Title -In (
+    'Critical Updates',
+    'Definition Updates',
+    'Feature Packs',
+    'Security Updates',
+    'Service Packs',
+    'Update Rollups',
+    'Updates')}
+$class_coll = New-Object Microsoft.UpdateServices.Administration.UpdateClassificationCollection
+$class_coll.AddRange($class)
+$rule.SetUpdateClassifications($class_coll)
+$rule.Enabled = $True
+$rule.Save()
+}
+============
+
+
 
     # this saves Synchronization Info
     $Synchronization.Save()

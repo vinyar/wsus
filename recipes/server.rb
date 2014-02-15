@@ -91,7 +91,7 @@ end
 
 windows_package "ReportViewer.exe" do
     action :install
-    # installer_type :custom
+    installer_type :custom
     source 'c:/chef/ReportViewer.exe'
     options "/q /l c:\\chef\\ReportViewer_install.log"
     # not_if "type C:\\Users\\Opscode\\AppData\\Local\\Temp\\WSUSSetup.log |grep -i 'Windows Server Update Services setup completed successfully'"
