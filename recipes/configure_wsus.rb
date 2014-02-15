@@ -16,75 +16,72 @@ end
 
 
 # TODO: Change Updates to Win2k8 only
+powershell_script "configure_wsus_server" do
+  code <<-EOH
+    # per http://msdn.microsoft.com/en-us/library/aa349325(v=vs.85).aspx
+    $w  = [reflection.assembly]::LoadWithPartialName("Microsoft.UpdateServices.Administration")
+    $ww = [Microsoft.UpdateServices.Administration.AdminProxy]::getUpdateServer("localhost",$false,8530)
 
-per http://msdn.microsoft.com/en-us/library/aa349325(v=vs.85).aspx
-$w  = [reflection.assembly]::LoadWithPartialName("Microsoft.UpdateServices.Administration")
-$ww = [Microsoft.UpdateServices.Administration.AdminProxy]::getUpdateServer(“localhost”,$false,8530)
+    $Configuration   = $ww.GetConfiguration();
+    $Synchronization = $ww.GetSubscription();
 
-$Configuration = $wsus.GetConfiguration();
-$Synchronization = $wsus.GetSubscription();
+    # Tells it to Sync from MS
+    $Configuration.SyncFromMicrosoftUpdate = $true ## Change to attribute (true for master/ false for slave)
 
-# Tells it to Sync from MS
-$Configuration.SyncFromMicrosoftUpdate = $true ## Change to attribute (true for master/ false for slave)
+    # This tells it not to use every available language
+    $Configuration.AllUpdateLanguagesEnabled = $false ## Change to attribute
 
-# This tells it not to use every available language
-$Configuration.AllUpdateLanguagesEnabled = $false ## Change to attribute
+    # This sets it just to do English (for multiple languages use collection)
+    # $language = New-Object -Type System.Collections.Specialized.StringCollection
+    # $language.Add("en")
+    $Configuration.SetEnabledUpdateLanguages("en")
 
-# This sets it just to do English
-# $language = New-Object -Type System.Collections.Specialized.StringCollection
-# $language.Add("en")
-$Configuration.SetEnabledUpdateLanguages("en")
-
-# This commits your changes
-$Configuration.Save()
-
-
-
-# This sets synchronization to be automatic
-$Synchronization.SynchronizeAutomatically = $true ## Change to attribute 
-
-# This sets the time, GMT, in 24 hour format (00:00:00) format
-$Synchronization.SynchronizeAutomaticallyTimeOfDay = '00:01:00'
+    # This commits your changes
+    $Configuration.Save()
 
 
-# Set the WSUS Server Syncronisation Number of Syncs per day 
-$wsusSub.NumberOfSynchronizationsPerDay="24"
+    # This sets synchronization to be automatic
+    $Synchronization.SynchronizeAutomatically = $true ## Change to attribute 
 
-# Change products
-# TODO
+    # This sets the time, GMT, in 24 hour format (00:00:00) format
+    $Synchronization.SynchronizeAutomaticallyTimeOfDay = '00:01:00'
 
-# Change Product Classification
-# TODO
-$Synchronization.GetUpdateClassifications()
-$Synchronization.SetUpdateClassifications()
+    # Set the WSUS Server Syncronisation Number of Syncs per day 
+    $wsusSub.NumberOfSynchronizationsPerDay="24"
 
-# this saves Synchronization Info
-$Synchronization.Save()
+    # Change products
+    # TODO
 
-# this does the first synchronization from the upstream server instantly.  Comment this out if you want to wait for the first synchronization
-$Synchronization.StartSynchronization();
+    # Change Product Classification
+    # TODO
+    $Synchronization.GetUpdateClassifications()
+    $Synchronization.SetUpdateClassifications()
+
+    # this saves Synchronization Info
+    $Synchronization.Save()
+
+    # this does the first synchronization from the upstream server instantly.  Comment this out if you want to wait for the first synchronization
+    $Synchronization.StartSynchronization();
+  EOH
+end
+
+# Codeplex plugin:
+#     http://poshwsus.codeplex.com/
+
+# Docs:
+# http://technet.microsoft.com/en-us/library/cc772524.aspx#BKMK_winui
 
 
-Codeplex plugin:
-    http://poshwsus.codeplex.com/
+# General security
+# http://technet.microsoft.com/en-us/library/dd939800(v=ws.10).aspx
 
+# Secure connectivity with SSL
+# http://technet.microsoft.com/en-us/library/dd939849(v=ws.10).aspx#ssl
 
-## Select only English for update languages
+#     or
 
-
-http://technet.microsoft.com/en-us/library/cc772524.aspx#BKMK_winui
-
-
-General security
-http://technet.microsoft.com/en-us/library/dd939800(v=ws.10).aspx
-
-Secure connectivity with SSL
-http://technet.microsoft.com/en-us/library/dd939849(v=ws.10).aspx#ssl
-
-    or
-
-Secure connectivity with IPsec
-http://technet.microsoft.com/en-us/library/5d81ea85-ebf7-40e9-8acd-8bab1182dff8
+# Secure connectivity with IPsec
+# http://technet.microsoft.com/en-us/library/5d81ea85-ebf7-40e9-8acd-8bab1182dff8
 
 
 
