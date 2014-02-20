@@ -8,9 +8,10 @@
 #
 
 powershell_script "install wsus prereqs" do
-	code <<-EOH
-	"web-server", "Web-Asp-Net", "Web-Windows-Auth", "Web-Metabase", "File-Services" | foreach {if (!(Get-WindowsFeature $_)){add-windowsfeature $_}}
-	 EOH
+  code <<-EOH
+    $features = "web-server", "Web-Asp-Net", "Web-Windows-Auth", "Web-Metabase", "File-Services"
+    $features | foreach {if (!(Get-WindowsFeature $_).installed){add-windowsfeature $_}}
+  EOH
 end
 
 # old code
@@ -97,3 +98,6 @@ windows_package "ReportViewer.exe" do
     # not_if "type C:\\Users\\Opscode\\AppData\\Local\\Temp\\WSUSSetup.log |grep -i 'Windows Server Update Services setup completed successfully'"
     # require 'pry';binding.pry
 end
+
+
+include_recipe "wsus::configure_wsus"

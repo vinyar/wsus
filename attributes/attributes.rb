@@ -13,10 +13,39 @@
 
 
 # Allowed settings - server or client
-default['wsus']['installation_target'] = false
+default['wsus']['server'] = true
 default['wsus']['wsus_server_url'] = nil
 
 
 
 default['wsus']['administrators'] = 'opscode'
 default['wsus']['reporters'] = ''
+
+
+default['wsus']['client_registry']['update_server'] = {
+	# :enabled => 1,
+	:regpath => 'hklm\Software\Policies\Microsoft\Windows\WindowsUpdate',
+	:name => 'WUServer',
+	:regtype => :string,
+	:valenabled => "http://ec2-23-20-242-20.compute-1.amazonaws.com:8530" #,
+	# :valdisabled => ''
+  }
+
+default['wsus']['client_registry']['auto_update'] = {
+	# :enabled => 1,
+	:regpath => 'hklm\Software\Policies\Microsoft\Windows\WindowsUpdate\AU',
+	:name => 'NoAutoUpdate',
+	:regtype => :string,
+	:valenabled => 1#,
+	# :valdisabled => ''
+  }
+
+default['wsus']['client_registry']['update_frequency'] = {
+	# :enabled => 1,
+	:regpath => 'hklm\Software\Policies\Microsoft\Windows\WindowsUpdate\AU',
+	:name => 'NoAutoUpdate',
+	:regtype => :dword,
+	:valenabled => 1#,
+	# :valdisabled => ''
+  }
+

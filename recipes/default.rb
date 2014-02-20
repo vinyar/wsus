@@ -7,9 +7,18 @@
 # All rights reserved - Do Not Redistribute
 #
 
-if node['wsus']['installation_target']
-  include_recipe 'server'
+case node['wsus']['server']
+when true
+  include_recipe 'wsus::server'
+else
+  if search(:nodes, "wsus.server:true").nil
+  	# # knife search "role:wsus_srv" -a node.cloud.public_hostname
+  	log "no WSUS server found"
+  else
+    include_recipe 'wsus::client'
+  end
 end
+
 
 
 
