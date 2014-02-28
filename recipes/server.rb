@@ -7,6 +7,8 @@
 # All rights reserved - Do Not Redistribute
 #
 
+include_recipe "systemprep::workstation_setup"
+
 powershell_script "install wsus prereqs" do
   code <<-EOH
     $features = "web-server", "Web-Asp-Net", "Web-Windows-Auth", "Web-Metabase", "File-Services"
@@ -73,7 +75,7 @@ windows_package "WSUS30-KB972455-x64.exe" do
 	action :install
 	installer_type :custom
 	source 'c:/chef/WSUS30-KB972455-x64.exe'
-    options "/q CONTENT_LOCAL=1 CONTENT_DIR=C:\\WSUS DEFAULT_WEBSITE=0 CREATE_DATABASE=1 PREREQ_CHECK_LOG=C:\\chef\\bob.txt MU_ROLLUP=0"
+  options "/q CONTENT_LOCAL=1 CONTENT_DIR=C:\\WSUS DEFAULT_WEBSITE=0 CREATE_DATABASE=1 PREREQ_CHECK_LOG=C:\\chef\\bob.txt MU_ROLLUP=0"
 	# options with SQL "/q CONTENT_LOCAL=1 CONTENT_DIR=C:\\WSUS SQLINSTANCE_NAME=%COMPUTERNAME% DEFAULT_WEBSITE=0 CREATE_DATABASE=1 PREREQ_CHECK_LOG=C:\\chef\\bob.txt MU_ROLLUP=0"
 	# other stuff CONSOLE_INSTALL=0 ? ENABLE_INVENTORY ? 
 	
@@ -83,21 +85,27 @@ windows_package "WSUS30-KB972455-x64.exe" do
 end
 
 
-# Installation of the Reporting service for WSUS
+## Per Julians suggestion
+include_recipe "wsus::reportviewer"
 
-remote_file "c:/chef/ReportViewer.exe" do
-	# file location: http://www.microsoft.com/en-us/download/details.aspx?id=577
-  source "http://download.microsoft.com/download/0/9/d/09d3df2d-abec-4ebe-bc64-260b05a30feb/ReportViewer.exe"
+
+
+
+# Install WSUS SP2 rollup update
+# very important to read this link when modifying recipe to support SSL/NBL/Remote SQL or other advanced features
+# http://support.microsoft.com/kb/2828185/en-us  (this update rolls up /kb/2720211 and /kb/2734608)
+
+remote_file 'c:/chef/WSUS-KB2828185-amd64.exe' do
+  source "http://download.microsoft.com/download/E/B/A/EBA42B12-8E2C-41E6-8F76-9AA40BF2A4A6/WSUS-KB2828185-amd64.exe"
 end
 
-windows_package "ReportViewer.exe" do
-    action :install
-    installer_type :custom
-    source 'c:/chef/ReportViewer.exe'
-    options "/q /l c:\\chef\\ReportViewer_install.log"
-    # not_if "type C:\\Users\\Opscode\\AppData\\Local\\Temp\\WSUSSetup.log |grep -i 'Windows Server Update Services setup completed successfully'"
-    # require 'pry';binding.pry
+windows_package 'WSUS-KB2720211-x64.exe' do
+	action :install
+	installer_type :custom
+	source 'c:/chef/WSUS-KB2828185-amd64.exe'
+    options "/q c:\\chef\\WSUS-KB2720211-x64.log"
+    # not_if ?? needed??
 end
 
 
-include_recipe "wsus::configure_wsus"
+# include_recipe "wsus::configure_wsus"

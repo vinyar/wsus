@@ -1,6 +1,21 @@
 # Install group policy management command line tools
+
+#Temporary addition
+# http://github.com/vinyar/systemprep.git
+include_recipe "systemprep::workstation_setup"
+
+# Nice troubleshooting guides
+# http://prajwaldesai.com/troubleshooting-wsus-3-0-sp2-on-windows-server/
+# http://technet.microsoft.com/en-us/library/dd939801%28v=ws.10%29.aspx
+
 include_recipe "wsus::gpo_tools"
 
+
+# Take a look at this. Might provide a set of tools to configure client to point at the custom WSUS server
+# Install-WindowsFeature -Name UpdateServices-RSAT
+
+# Other Documentation:
+#     http://blogs.technet.com/b/heyscriptingguy/archive/2012/01/16/introduction-to-wsus-and-powershell.aspx
 
 # For attribute driven cookbook
 # node['wsus']['client_registry'].each |key, value| do
@@ -18,10 +33,10 @@ registry_key 'HKLM\Software\Policies\Microsoft\Windows\WindowsUpdate' do
   values [
     {:name => 'DisableWindowsUpdateAccess', :type => :dword, :data => '0'},
     {:name => 'ElevateNonAdmins', :type => :dword, :data => '0'},
-    {:name => 'WUServer', :type => :string, :data => "http://ec2-23-20-242-20.compute-1.amazonaws.com:8530"},
-    {:name => 'WUStatusServer', :type => :string, :data => "http://ec2-23-20-242-20.compute-1.amazonaws.com:8530"}
+    {:name => 'WUServer', :type => :string, :data => "http://10.185.60.113"},
+    {:name => 'WUStatusServer', :type => :string, :data => "http://10.185.60.113"} # port does not seem necessary :8530
    ]
-  action :create_if_missing
+  # action :create_if_missing
 end
 
 
@@ -36,17 +51,19 @@ registry_key 'HKLM\Software\Policies\Microsoft\Windows\WindowsUpdate\AU' do
     {:name => 'NoAutoUpdate', :type => :dword, :data => '0'},
     {:name => 'UseWUServer', :type => :dword, :data => '1'}
    ]
-    action :create_if_missing
+    # action :create_if_missing
 end
+
+
 
 
 # ## Modify GPO value of the new node to point at the new WSUS server
 # # commands for AD joined boxes
 # powershell_script "point at the WSUS server" do
-# 	code <<-EOH
-	# Set-GPRegistryValue -Name "Computer Policy" -Key "HKLM\Software\Policies\Microsoft\Windows\WindowsUpdate\AU" -ValueName "UseWUServer" -Type DWORD -Value 1
-	# Set-GPRegistryValue -Name "Computer Policy" -Key "HKLM\Software\Policies\Microsoft\Windows\WindowsUpdate" -ValueName "WUServer" -Type STRING -Value "http://ec2-23-20-242-20.compute-1.amazonaws.com:8530"
-	# Set-GPRegistryValue -Name "Computer Policy" -Key "HKLM\Software\Policies\Microsoft\Windows\WindowsUpdate" -ValueName "WUStatusServer" -Type STRING -Value "http://ec2-23-20-242-20.compute-1.amazonaws.com:8530"
+#   code <<-EOH
+  # Set-GPRegistryValue -Name "Computer Policy" -Key "HKLM\Software\Policies\Microsoft\Windows\WindowsUpdate\AU" -ValueName "UseWUServer" -Type DWORD -Value 1
+  # Set-GPRegistryValue -Name "Computer Policy" -Key "HKLM\Software\Policies\Microsoft\Windows\WindowsUpdate" -ValueName "WUServer" -Type STRING -Value "http://ec2-54-226-104-212.compute-1.amazonaws.com:8530"
+  # Set-GPRegistryValue -Name "Computer Policy" -Key "HKLM\Software\Policies\Microsoft\Windows\WindowsUpdate" -ValueName "WUStatusServer" -Type STRING -Value "http://ec2-54-226-104-212.compute-1.amazonaws.com:8530"
 
 #   EOH
 # end
@@ -59,7 +76,7 @@ end
 
 # # do some magical search to identify the WSUS server for the Chef Org
 # knife search "role:wsus_srv" -a node.cloud.public_hostname
-
+# wsus_nodes = search(:node, 'role:wsus_srv')
 
 # STIG Documentation:       V-14250 STIG
 # Microsoft Documentation:  registry configuration per http://technet.microsoft.com/en-us/library/dd939844(v=ws.10).aspx
@@ -68,6 +85,4 @@ end
 # http://technet.microsoft.com/en-us/magazine/gg277500.aspx
 # http://technet.microsoft.com/en-us/library/ee461040.aspx
 
-# Other Documentation:
-#     http://blogs.technet.com/b/heyscriptingguy/archive/2012/01/16/introduction-to-wsus-and-powershell.aspx
 

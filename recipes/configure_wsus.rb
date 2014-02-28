@@ -3,6 +3,7 @@
 
 # High level link: http://technet.microsoft.com/en-us/library/dd939906(v=ws.10).aspx
 #                  http://technet.microsoft.com/en-us/library/dd939838(v=ws.10).aspx
+    # Nice blog - http://smsagent.wordpress.com/tag/wsus-powershell/
 
 user 'adding administrators' do
   username 'TestAdmin123'
@@ -26,15 +27,15 @@ end
 
 powershell_script "test testing of WSUS installation" do
   code 'if ((Get-WindowsFeature -Name OOB-WSUS).installed){"hi"}'
-  notifies "powershell_script[configure_wsus_server]"
+  notifies :run, "powershell_script[configure_wsus_server]", :immediately
 end
 
 powershell_script "configure_wsus_server" do
   code <<-EOH
     # per http://msdn.microsoft.com/en-us/library/aa349325(v=vs.85).aspx
     $w  = [reflection.assembly]::LoadWithPartialName("Microsoft.UpdateServices.Administration")
-    $ww = [Microsoft.UpdateServices.Administration.AdminProxy]::getUpdateServer("localhost",$false,8530)
-    # $ww = [Microsoft.UpdateServices.Administration.AdminProxy]::getUpdateServer()
+    # $ww = [Microsoft.UpdateServices.Administration.AdminProxy]::getUpdateServer("localhost",$false,8530) # for remote administration
+    $ww = [Microsoft.UpdateServices.Administration.AdminProxy]::getUpdateServer()
 # for future updates
 # $updatescope = New-Object Microsoft.UpdateServices.Administration.UpdateScope
 
@@ -66,25 +67,35 @@ powershell_script "configure_wsus_server" do
     $Synchronization.SynchronizeAutomaticallyTimeOfDay = '12:00:00'
 
     # Set the WSUS Server Syncronisation Number of Syncs per day 
-    $Synchronization.NumberOfSynchronizationsPerDay="4"
+    $Synchronization.NumberOfSynchronizationsPerDay='4'
 
-    # Set WSUS to download available categories
-    $Synchronization.StartSynchronizationForCategoryOnly()
+    # Saving to avoid losing changes after Category Sync starts
+    $Syncronisation.save()
+
+# Set WSUS to download available categories
+# This can take up to 10 minutes
+$Synchronization.StartSynchronizationForCategoryOnly()
 
 
-    # Nice blog - http://smsagent.wordpress.com/tag/wsus-powershell/
+# Figure out a loop to make sure sync is done. I saw it in one of the scripts in references.
+# for(;$Synchronization.GetSynchronizationProgress().totalitems -gt 0;){strart-sleep 4} # or something like that
+
 
     # Change products
     ## TODO Configure idempotence
-    # $Synchronization.GetUpdateCategories() | select title 
-    $products = $Synchronization.GetUpdateCategories() | ? {$_.title -like 'Windows Server 2008 R2'}
+    $main_category = $Synchronization.GetUpdateCategories() | where {$_.title -like 'windows'}
+        # example of multiple products
+        # $products = $main_category.GetSubcategories() | ? {$_.title -in ('Windows Server 2008 R2','Windows Server 2008 Server Manager Dynamic Installer')}
+    $products = $main_category.GetSubcategories() | ? {$_.title -in ('Windows Server 2008 R2')}
     $products_col = New-Object Microsoft.UpdateServices.Administration.UpdateCategoryCollection
     $products_col.AddRange($products)
     $Synchronization.SetUpdateCategories($products_col)
 
 
-  # Change Classifications
-    # (available classifications)
+
+    # Change Classifications
+    ## TODO Configure idempotence
+      # (available classifications)
       # 'Critical Updates',
       # 'Definition Updates',
       # 'Feature Packs',
@@ -92,26 +103,30 @@ powershell_script "configure_wsus_server" do
       # 'Service Packs',
       # 'Update Rollups',
       # 'Updates'
-    ## TODO Configure idempotence
-    # $Synchronization.GetUpdateClassifications().title
-    $classifications = $Synchronization.GetUpdateClassifications() | ? {$_.title -in ('Critical Updates','Security Updates')}
+        # example of multiple products
+        # $classifications = $Synchronization.GetUpdateClassifications() | ? {$_.title -in ('Critical Updates','Security Updates')}
+    $classifications = $Synchronization.GetUpdateClassifications() | ? {$_.title -in ('Critical Updates')}
     $classifications_col = New-Object Microsoft.UpdateServices.Administration.UpdateClassificationCollection
     $classifications_col.AddRange($classifications)
     $Synchronization.SetUpdateClassifications($classifications_col)
 
 
-    # Configure Default Approval Rule
+    # Configure Default Approval Rule - disabled for now
     # $ww.GetInstallApprovalRules()
-    $rule = $rules | Where {$_.Name -eq "Default Automatic Approval Rule"}
-    $rule.SetUpdateClassifications($classifications_col)
-    $rule.Enabled = $True
-    $rule.Save()
+    # $rule = $rules | Where {$_.Name -eq "Default Automatic Approval Rule"}
+    # $rule.SetUpdateClassifications($classifications_col)
+    # $rule.Enabled = $True
+    # $rule.Save()
 
     # this saves Synchronization Info
     $Synchronization.Save()
 
     # this does the first synchronization from the upstream server instantly.  Comment this out if you want to wait for the first synchronization
+# This can take well over an hour. Should probably be a handler or something that wouldnt hang chef run for an hour
+# Might also be a good idea to set [datetime]::now during FirstSync() and time it to start a few min after chef run finishes.
     $Synchronization.StartSynchronization()
+
+
   EOH
   action :nothing
 end
