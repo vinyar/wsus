@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 wsus Cookbook
 =============
 This is a Chef cookbook to setup a Windows Update (WSUS) server and configure a client to connect to it.
@@ -72,4 +71,3 @@ wsus
 ====
 
 Chef cookbooks to deal with setting up WSUS (Windows Server Update Service) server
->>>>>>> bc42b36d9e31cdfd8e84766dab34700dcecf20a4
