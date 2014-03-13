@@ -1,18 +1,20 @@
 <<<<<<< HEAD
 wsus Cookbook
 =============
-TODO: Enter the cookbook description here.
+This is a Chef cookbook to setup a Windows Update (WSUS) server and configure a client to connect to it.
 
-e.g.
-This cookbook makes your favorite breakfast sandwich.
+This cookbook contains multiple recipes to accomplish a task:
+  default - will evaluate node['wsus']['server'] and either configure a server or client. Client configureation will be done based on search. If no WSUS managed by Chef is found, client recipe will exit.
+  server - will download and install WSUS components and configure the server.
+  configure_wsus - will configure the server (called by server recipe)
+  reportviewer - per request, report viewer installation was carved out into its own recipe.
+  server_cleanup - untested & experimental recipe.
+
 
 Requirements
 ------------
-TODO: List your cookbook requirements. Be sure to include any requirements this cookbook has on platforms, libraries, other cookbooks, packages, operating systems, etc.
+Windows 2008 server. Best if used with a wrapper cookbook specific to your org to overwrited defaults.
 
-e.g.
-#### packages
-- `toaster` - wsus needs toaster to brown your bagel.
 
 Attributes
 ----------
@@ -37,17 +39,15 @@ e.g.
 
 Usage
 -----
-#### wsus::default
-TODO: Write usage instructions for each cookbook.
+#### wsus::server
 
-e.g.
 Just include `wsus` in your node's `run_list`:
 
 ```json
 {
   "name":"my_node",
   "run_list": [
-    "recipe[wsus]"
+    "recipe[wsus::server]"
   ]
 }
 ```
@@ -66,7 +66,7 @@ e.g.
 
 License and Authors
 -------------------
-Authors: TODO: List authors
+Authors: Alex Vinyar
 =======
 wsus
 ====
