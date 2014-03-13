@@ -7,7 +7,7 @@
 # All rights reserved - Do Not Redistribute
 #
 
-include_recipe "systemprep::workstation_setup"
+# include_recipe "chef-dev-workstation::windows-setup"
 
 powershell_script "install wsus prereqs" do
   code <<-EOH
