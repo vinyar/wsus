@@ -90,7 +90,11 @@ powershell_script "configure_wsus_server" do
 
     # Change products (windows 2008r2 only by default)
 ## TODO Configure idempotence
-    $main_category = $Synchronization.GetUpdateCategories() | where {$_.title -like 'windows'}
+        ## broken - this shows only products already selected. (left here for reference)
+        # $main_category = $Synchronization.GetUpdateCategories() | where {$_.title -like 'windows'}
+    
+    ## This shows all of the available products
+    $main_category = $ww.GetUpdateCategories() | where {$_.title -like 'windows'}
         # example of multiple products
         # $products = $main_category.GetSubcategories() | ? {$_.title -in ('Windows Server 2008 R2','Windows Server 2008 Server Manager Dynamic Installer')}
     $products = $main_category.GetSubcategories() | ? {$_.title -in ('Windows Server 2008 R2')}
@@ -109,8 +113,12 @@ powershell_script "configure_wsus_server" do
       # 'Update Rollups',
       # 'Updates'
         # example of multiple products
-        # $classifications = $Synchronization.GetUpdateClassifications() | ? {$_.title -in ('Critical Updates','Security Updates')}
-    $classifications = $Synchronization.GetUpdateClassifications() | ? {$_.title -in ('Critical Updates')}
+        # $classifications = $ww.GetUpdateClassifications() | ? {$_.title -in ('Critical Updates','Security Updates')}
+        ## - again broken - this shows only selected classifications
+        ## $classifications = $Synchronization.GetUpdateClassifications() | ? {$_.title -in ('Critical Updates')}
+    
+    # Select desired classifications from a full list of available classifications
+    $classifications = $ww.GetUpdateClassifications() | ? {$_.title -in ('Critical Updates')}
     $classifications_col = New-Object Microsoft.UpdateServices.Administration.UpdateClassificationCollection
     $classifications_col.AddRange($classifications)
     $Synchronization.SetUpdateClassifications($classifications_col)
