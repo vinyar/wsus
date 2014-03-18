@@ -9,7 +9,7 @@
 
 # include_recipe "chef-dev-workstation::windows-setup"
 
-powershell_script "install wsus prereqs" do
+powershell_script "install_wsus_prereqs" do
   code <<-EOH
     $features = "web-server", "Web-Asp-Net", "Web-Windows-Auth", "Web-Metabase", "File-Services"
     $features | foreach {if (!(Get-WindowsFeature $_).installed){add-windowsfeature $_}}
@@ -68,7 +68,7 @@ remote_file "c:/chef/WSUS30-KB972455-x64.exe" do
   source "http://download.microsoft.com/download/B/0/6/B06A69C3-CF97-42CF-86BF-3C59D762E0B2/WSUS30-KB972455-x64.exe"
 end
 
-windows_package "WSUS30-KB972455-x64.exe" do
+windows_package "Windows Server Update Services 3.0 SP2" do
 	# default logs go to C:\Users\Opscode\AppData\Local\Temp\WSUSSetup.log - doesnt seem to be a way to change it
 	# notes http://technet.microsoft.com/en-us/library/dd939814(WS.10).aspx
 	# notes http://technet.microsoft.com/en-us/library/dd939811(v=ws.10).aspx#wssetup
@@ -99,7 +99,7 @@ remote_file 'c:/chef/WSUS-KB2828185-amd64.exe' do
   source "http://download.microsoft.com/download/E/B/A/EBA42B12-8E2C-41E6-8F76-9AA40BF2A4A6/WSUS-KB2828185-amd64.exe"
 end
 
-windows_package 'WSUS-KB2720211-x64.exe' do
+windows_package 'Windows Server Update Services 3.0 SP2-KB2828185' do
 	action :install
 	installer_type :custom
 	source 'c:/chef/WSUS-KB2828185-amd64.exe'
@@ -108,4 +108,4 @@ windows_package 'WSUS-KB2720211-x64.exe' do
 end
 
 
-# include_recipe "wsus::configure_wsus"
+include_recipe "wsus::configure_wsus"

@@ -5,14 +5,14 @@
 #                  http://technet.microsoft.com/en-us/library/dd939838(v=ws.10).aspx
     # Nice blog - http://smsagent.wordpress.com/tag/wsus-powershell/
 
-user 'adding administrators' do
-  username 'TestAdmin123'
+user 'TestAdmin123' do
+  # username 'TestAdmin123'
   password 'TestAdmin123456789!!'
   action :create
 end
 
-user 'adding administrators' do
-  username 'TestUser123'
+user 'TestUser123' do
+  # username 'TestUser123'
   password 'TestUser123456789!!'
   action :create
 end
@@ -27,15 +27,17 @@ end
 
 powershell_script "test testing of WSUS installation" do
   code 'if ((Get-WindowsFeature -Name OOB-WSUS).installed){"hi"}'
-  notifies :run, "powershell_script[configure_wsus_server]", :immediately
+  # notifies :run, "powershell_script[configure_wsus_server]", :immediately
 end
 
 powershell_script "configure_wsus_server" do
   code <<-EOH
     # per http://msdn.microsoft.com/en-us/library/aa349325(v=vs.85).aspx
     $w  = [reflection.assembly]::LoadWithPartialName("Microsoft.UpdateServices.Administration")
-    # $ww = [Microsoft.UpdateServices.Administration.AdminProxy]::getUpdateServer("localhost",$false,8530) # for remote administration
     $ww = [Microsoft.UpdateServices.Administration.AdminProxy]::getUpdateServer()
+    
+    # $ww = [Microsoft.UpdateServices.Administration.AdminProxy]::getUpdateServer("localhost",$false,8530) # for remote administration
+
 # for future updates
 # $updatescope = New-Object Microsoft.UpdateServices.Administration.UpdateScope
 
@@ -61,28 +63,33 @@ powershell_script "configure_wsus_server" do
 
 
     # This sets synchronization to be automatic
-    $Synchronization.SynchronizeAutomatically = $true ## Change to attribute 
+    ## Change to attribute
+    $Synchronization.SynchronizeAutomatically = $true  
 
     # This sets the time, GMT, in 24 hour format (00:00:00) format
     $Synchronization.SynchronizeAutomaticallyTimeOfDay = '12:00:00'
 
-    # Set the WSUS Server Syncronisation Number of Syncs per day 
+    # Set the WSUS Server Synchronization Number of Syncs per day 
     $Synchronization.NumberOfSynchronizationsPerDay='4'
 
     # Saving to avoid losing changes after Category Sync starts
-    $Syncronisation.save()
+    $Synchronization.save()
 
-# Set WSUS to download available categories
-# This can take up to 10 minutes
-$Synchronization.StartSynchronizationForCategoryOnly()
+    # Set WSUS to download available categories
+    # This can take up to 10 minutes
+    $Synchronization.StartSynchronizationForCategoryOnly()
+
+    # Loop to make sure new products synch up. And a anti-lock to prevent getting stuck.
+    $lock_prevention = [DateTime]::now.AddMinutes(10)
+    do{ 
+      Start-Sleep -Seconds 20
+      # write-host $([datetime]::now) --- $lock_prevention
+      $Status = $Synchronization.GetSynchronizationProgress().phase
+    } until ($Status -like "*NotProcessing*" -or $lock_prevention -lt [datetime]::now) 
 
 
-# Figure out a loop to make sure sync is done. I saw it in one of the scripts in references.
-# for(;$Synchronization.GetSynchronizationProgress().totalitems -gt 0;){strart-sleep 4} # or something like that
-
-
-    # Change products
-    ## TODO Configure idempotence
+    # Change products (windows 2008r2 only by default)
+## TODO Configure idempotence
     $main_category = $Synchronization.GetUpdateCategories() | where {$_.title -like 'windows'}
         # example of multiple products
         # $products = $main_category.GetSubcategories() | ? {$_.title -in ('Windows Server 2008 R2','Windows Server 2008 Server Manager Dynamic Installer')}
@@ -92,10 +99,8 @@ $Synchronization.StartSynchronizationForCategoryOnly()
     $Synchronization.SetUpdateCategories($products_col)
 
 
-
-    # Change Classifications
     ## TODO Configure idempotence
-      # (available classifications)
+    # Change Classifications (available classifications)
       # 'Critical Updates',
       # 'Definition Updates',
       # 'Feature Packs',
@@ -111,12 +116,12 @@ $Synchronization.StartSynchronizationForCategoryOnly()
     $Synchronization.SetUpdateClassifications($classifications_col)
 
 
-    # Configure Default Approval Rule - disabled for now
-    # $ww.GetInstallApprovalRules()
-    # $rule = $rules | Where {$_.Name -eq "Default Automatic Approval Rule"}
-    # $rule.SetUpdateClassifications($classifications_col)
-    # $rule.Enabled = $True
-    # $rule.Save()
+    # Configure Default Approval Rule - enabled for Critical updates only
+    $ww.GetInstallApprovalRules()
+    $rule = $rules | Where {$_.Name -eq "Default Automatic Approval Rule"}
+    $rule.SetUpdateClassifications($classifications_col)
+    $rule.Enabled = $True
+    $rule.Save()
 
     # this saves Synchronization Info
     $Synchronization.Save()
@@ -128,7 +133,7 @@ $Synchronization.StartSynchronizationForCategoryOnly()
 
 
   EOH
-  action :nothing
+  # action :nothing
 end
 
 # Codeplex plugin:
@@ -151,9 +156,9 @@ end
 
 
 
-ruby_block "set node attributes for WSUS access URL" do
-  code <<-EOH
-    #node.set['wsus']['wsus_server_url'] = node['cloud']['public_hostname']
-    #node.set['wsus']['wsus_server_url'] = node.fqdn unless(node.fqdn.eql?(node.hostname)) || node['cloud']['public_hostname'] || node.ec2.public_hostname
-  EOH
-end
+# ruby_block "set node attributes for WSUS access URL" do
+#   code <<-EOH
+#     #node.set['wsus']['wsus_server_url'] = node['cloud']['public_hostname']
+#     #node.set['wsus']['wsus_server_url'] = node.fqdn unless(node.fqdn.eql?(node.hostname)) || node['cloud']['public_hostname'] || node.ec2.public_hostname
+#   EOH
+# end

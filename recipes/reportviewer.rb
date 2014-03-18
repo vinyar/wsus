@@ -5,7 +5,7 @@ remote_file "c:/chef/ReportViewer.exe" do
   source "http://download.microsoft.com/download/0/9/d/09d3df2d-abec-4ebe-bc64-260b05a30feb/ReportViewer.exe"
 end
 
-windows_package "ReportViewer.exe" do
+windows_package "Microsoft Report Viewer Redistributable 2008 (KB952241)" do
     action :install
     installer_type :custom
     source 'c:/chef/ReportViewer.exe'

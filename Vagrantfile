@@ -7,7 +7,15 @@
 # vi: set ft=ruby :
 alex_box_url = "~/Documents/ISO_BOX_etc/virtualbox-win2008r2-enterprise-provisionerless.box"
 ge_box_url = "~/Documents/ISO_BOX_etc/ge_windows2008r2.box"
-box_url = $alex_box_url
+box_url = $ge_box_url
+
+alex_box = 'alex_win2k8'
+ge_box = 'ge_win2k8'
+boxx = $ge_box
+
+network_wifi = 'en0: Wi-Fi (AirPort)'
+network_wired = 'en1: Thunderbolt Ethernet'
+network = $network_wifi
 
 # See what the community supported way for managing ports is
 # host_win_rm_port    =  15985
@@ -15,9 +23,9 @@ box_url = $alex_box_url
 # host_chef_zero_port =  4000
 
 # Vagrantfile API/syntax version. Don't touch unless you know what you're doing!
-VAGRANTFILE_API_VERSION = "2"
+# VAGRANTFILE_API_VERSION = "2"
 
-Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
+Vagrant.configure("2") do |config|
 
  config.vm.define 'wsus_server',primary: true do |config|
 
@@ -39,14 +47,14 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
 
     # Every Vagrant virtual environment requires a box to build off of.
-    config.vm.box = "wsus"
+    config.vm.box = 'ge_win2k8'
 
     # The url from where the 'config.vm.box' box will be fetched 
     config.vm.box_url = $box_url
 
     # Create a private network, which allows host-only access to the machine
-    config.vm.network :public_network, ip: "111.222.33.4", :bridge => 'en0: Wi-Fi (AirPort)'
-    # config.vm.network :private_network, ip: "192.168.33.11"
+    config.vm.network :public_network, ip: "111.222.33.4", :bridge => $network
+    # config.vm.network "private_network", ip: "192.168.50.4"
 
     # Create a forwarded port mapping which allows access to a specific port
     config.vm.network "forwarded_port", guest: 5985, host: 15985, auto_correct: true # winrm
@@ -120,13 +128,15 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
     config.berkshelf.enabled = true
 
     # Every Vagrant virtual environment requires a box to build off of.
-    config.vm.box = "wsus"
+    config.vm.box = 'ge_win2k8'
 
     # The url from where the 'config.vm.box' box will be fetched 
     config.vm.box_url = $box_url
 
     # Create a private network, which allows host-only access to the machine
-    config.vm.network :public_network, ip: "111.222.33.5", :bridge => 'en0: Wi-Fi (AirPort)'
+    config.vm.network :public_network, ip: "111.222.33.5"#, :bridge => 'en0: Wi-Fi (AirPort)'
+    # config.vm.network "private_network", ip: "192.168.50.5"
+
 
     # Create a forwarded port mapping which allows access to a specific port
     config.vm.network "forwarded_port", guest: 5985, host: 15985, auto_correct: true  # winrm
