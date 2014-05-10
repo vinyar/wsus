@@ -2,7 +2,7 @@
 
 #Temporary addition
 # http://github.com/vinyar/systemprep.git
-include_recipe "systemprep::workstation_setup"
+# include_recipe "systemprep::workstation_setup"
 
 # Nice troubleshooting guides
 # http://prajwaldesai.com/troubleshooting-wsus-3-0-sp2-on-windows-server/
@@ -28,13 +28,16 @@ include_recipe "wsus::gpo_tools"
 #   end
 # end
 
+wsus_srv = "http://10.0.0.116"
+# wsus_srv = "http://54.85.119.200"
+
 # Manual registry setting for version 0.0.1
 registry_key 'HKLM\Software\Policies\Microsoft\Windows\WindowsUpdate' do
   values [
-    {:name => 'DisableWindowsUpdateAccess', :type => :dword, :data => '0'},
-    {:name => 'ElevateNonAdmins', :type => :dword, :data => '0'},
-    {:name => 'WUServer', :type => :string, :data => "http://10.185.60.113"},
-    {:name => 'WUStatusServer', :type => :string, :data => "http://10.185.60.113"} # port does not seem necessary :8530
+    {:name => 'DisableWindowsUpdateAccess', :type => :dword, :data => 0},
+    {:name => 'ElevateNonAdmins', :type => :dword, :data => 0},
+    {:name => 'WUServer', :type => :string, :data => "#{wsus_srv}"},
+    {:name => 'WUStatusServer', :type => :string, :data => "#{wsus_srv}"} # port does not seem necessary :8530
    ]
   # action :create_if_missing
 end
@@ -42,14 +45,14 @@ end
 
 registry_key 'HKLM\Software\Policies\Microsoft\Windows\WindowsUpdate\AU' do
   values [
-    {:name => 'AUOptions', :type => :dword, :data => '2'},
-    # {:name => 'DetectionFrequency', :type => :dword, :data => '12'},
-    # {:name => 'DetectionFrequencyEnabled', :type => :dword, :data => '0'},
-    {:name => 'NoAutoRebootWithLoggedOnUsers', :type => :dword, :data => '1'},
-    {:name => 'RebootRelaunchTimeout', :type => :dword, :data => '1440'},
-    {:name => 'RebootRelaunchTimeoutEnabled', :type => :dword, :data => '1'},
-    {:name => 'NoAutoUpdate', :type => :dword, :data => '0'},
-    {:name => 'UseWUServer', :type => :dword, :data => '1'}
+    {:name => 'AUOptions', :type => :dword, :data => 2},
+    # {:name => 'DetectionFrequency', :type => :dword, :data => 12},
+    # {:name => 'DetectionFrequencyEnabled', :type => :dword, :data => 0},
+    {:name => 'NoAutoRebootWithLoggedOnUsers', :type => :dword, :data => 1},
+    {:name => 'RebootRelaunchTimeout', :type => :dword, :data => 1440},
+    {:name => 'RebootRelaunchTimeoutEnabled', :type => :dword, :data => 1},
+    {:name => 'NoAutoUpdate', :type => :dword, :data => 0},
+    {:name => 'UseWUServer', :type => :dword, :data => 1}
    ]
     # action :create_if_missing
 end
