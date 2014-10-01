@@ -5,22 +5,12 @@
 
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
-alex_box_url = "~/Documents/ISO_BOX_etc/virtualbox-win2008r2-enterprise-provisionerless.box"
-ge_box_url = "~/Documents/ISO_BOX_etc/ge_windows2008r2.box"
-box_url = $ge_box_url
-
-alex_box = 'alex_win2k8'
-ge_box = 'ge_win2k8'
-boxx = $ge_box
+box_url = "~/Documents/ISO_BOX_etc/virtualbox-win2008r2-enterprise-provisionerless.box"
+box_name = 'win2k8r2-test'
 
 network_wifi = 'en0: Wi-Fi (AirPort)'
 network_wired = 'en1: Thunderbolt Ethernet'
-network = $network_wifi
-
-# See what the community supported way for managing ports is
-# host_win_rm_port    =  15985
-# host_rdp_port       =  13390
-# host_chef_zero_port =  4000
+network = network_wifi
 
 # Vagrantfile API/syntax version. Don't touch unless you know what you're doing!
 # VAGRANTFILE_API_VERSION = "2"
@@ -29,7 +19,7 @@ Vagrant.configure("2") do |config|
 
  config.vm.define 'wsus_server',primary: true do |config|
 
-    config.berkshelf.enabled = true
+    # config.berkshelf.enabled = true
     # config.berkshelf.berksfile_path = "./Berksfile"
 
     # Chef-Zero plugin configuration
@@ -47,19 +37,21 @@ Vagrant.configure("2") do |config|
 
 
     # Every Vagrant virtual environment requires a box to build off of.
-    config.vm.box = 'ge_win2k8'
+    config.vm.box = box_name
 
     # The url from where the 'config.vm.box' box will be fetched 
-    config.vm.box_url = $box_url
+    config.vm.box_url = box_url
 
-    # Create a private network, which allows host-only access to the machine
-    config.vm.network :public_network, ip: "111.222.33.4", :bridge => $network
-    # config.vm.network "private_network", ip: "192.168.50.4"
+    # Port forward WinRM and RDP
+    config.vm.network :forwarded_port, { :guest=>3389, :host=>3389, :id=>"rdp"}#, :auto_correct=>true }
+    config.vm.network :forwarded_port, { :guest=>5985, :host=>5985, :id=>"winrm"}#, :auto_correct=>true }
+    config.vm.network :private_network, ip: "192.168.33.10" # needed for Consultants/Contractors to spin up vagrant on VPN.
 
-    # Create a forwarded port mapping which allows access to a specific port
-    config.vm.network "forwarded_port", guest: 5985, host: 15985, auto_correct: true # winrm
-    config.vm.network "forwarded_port", guest: 3389, host: 13390, auto_correct: true  # remote desktop
-    config.vm.network "forwarded_port", guest: 4000, host: 4000, auto_correct: true   # chef-zero
+    config.vm.provider :virtualbox do |p|
+        p.gui = true
+        # adding nat flag to make it work over VPN (may only be needed for consultants). Works in conjunction with private_network above.
+        p.customize ["modifyvm", :id, "--memory", "1500", "--clipboard", "bidirectional", "--natdnshostresolver1", "on"]
+    end
 
 
     # Share an additional folder to the guest VM. The first argument is
@@ -71,32 +63,12 @@ Vagrant.configure("2") do |config|
     config.windows.halt_timeout = 25
     config.winrm.username = "vagrant"
     config.winrm.password = "vagrant"
-    config.winrm.max_tries = 30
+    config.winrm.max_tries = 10
 
-
-    # Example for VirtualBox:
-    config.vm.provider :virtualbox do |vb|
-      # Don't boot with headless mode
-      vb.gui = true
-      vb.name = "wsus_server"
-    
-      # Use VBoxManage to customize the VM. For example to change memory:
-      vb.customize [
-        "modifyvm", :id,
-         "--memory", "1536"
-       ]
-    end
-
-    # Enable provisioning with chef zero
-    # config.vm.provision :chef_client do |chef|
-    #   chef.chef_server_url = "https://api.opscode.com/organizations/alexv-ge"
-    #   chef.validation_key_path = "../.chef/alexv-ge-validator.pem"
-    #   # chef.validation_client_name = "testname001"
-    #   chef.node_name = "testname002"
-    #   chef.verbose_logging = false
-    #   chef.log_level = :info
-
-    #  end
+    #Set WinRM Timeout in seconds (Default 30)
+    config.winrm.timeout = 1800
+    # New veature in vagrant 1.6. Makes windows much easier.
+    config.vm.communicator = "winrm"
 
 
     ## Enable provisioning with chef solo
@@ -109,101 +81,18 @@ Vagrant.configure("2") do |config|
     end
 
     # Enable provisioning with chef server, specifying the chef server URL,
-    config.omnibus.chef_version = :latest
+    # config.omnibus.chef_version = :latest
     # config.omnibus.chef_version = '11.8.0'
 
-    # config.vm.provision :chef_client do |chef|
-    #   chef.chef_server_url = "https://api.opscode.com/organizations/alexv-ge"
-    #   chef.validation_key_path = "../.chef/alexv-ge-validator.pem"
-    #   # chef.validation_client_name = "testname001"
-    #   chef.node_name = "testname002"
-    #   chef.verbose_logging = false
-    #   chef.log_level = :info
-    #  end
   end
 
 
-  config.vm.define 'wsus_client' do |config|
-
-    config.berkshelf.enabled = true
-
-    # Every Vagrant virtual environment requires a box to build off of.
-    config.vm.box = 'ge_win2k8'
-
-    # The url from where the 'config.vm.box' box will be fetched 
-    config.vm.box_url = $box_url
-
-    # Create a private network, which allows host-only access to the machine
-    config.vm.network :public_network, ip: "111.222.33.5"#, :bridge => 'en0: Wi-Fi (AirPort)'
-    # config.vm.network "private_network", ip: "192.168.50.5"
+  # config.vm.define 'wsus_client' do |config|
+  # end
 
 
-    # Create a forwarded port mapping which allows access to a specific port
-    config.vm.network "forwarded_port", guest: 5985, host: 15985, auto_correct: true  # winrm
-    config.vm.network "forwarded_port", guest: 3389, host: 13390, auto_correct: true  # remote desktop
-    config.vm.network "forwarded_port", guest: 4000, host: 4000, auto_correct: true   # chef-zero
-
-
-    # Share an additional folder to the guest VM. The first argument is
-    config.vm.synced_folder "../", "c:/cookbooks_path"
-
-    # Provider-specific configuration so you can fine-tune various
-    # backing providers for Vagrant. These expose provider-specific options.
-    config.vm.guest = :windows
-    config.windows.halt_timeout = 25
-    config.winrm.username = "vagrant"
-    config.winrm.password = "vagrant"
-    config.winrm.max_tries = 30
-
-
-    # Example for VirtualBox:
-    config.vm.provider :virtualbox do |vb|
-      # Don't boot with headless mode
-      vb.gui = true
-      vb.name = "wsus_client"
-    
-      # Use VBoxManage to customize the VM. For example to change memory:
-      vb.customize [
-        "modifyvm", :id,
-         "--memory", "1536"
-       ]
-    end
-
-    # Enable provisioning with chef zero
-    # config.vm.provision :chef_client do |chef|
-    #   chef.chef_server_url = "https://api.opscode.com/organizations/alexv-ge"
-    #   chef.validation_key_path = "../.chef/alexv-ge-validator.pem"
-    #   # chef.validation_client_name = "testname001"
-    #   chef.node_name = "testname002"
-    #   chef.verbose_logging = false
-    #   chef.log_level = :info
-
-    #  end
-
-
-    ## Enable provisioning with chef solo
-    config.vm.provision :chef_solo do |chef|
-      chef.cookbooks_path = "../"
-      # chef.add_recipe "chef-dev-workstation::windows_setup"
-      chef.add_recipe "wsus::client"
-      # chef.run_list  = ["recipe[ge_splunk]"]
-
-    end
-
-    # Enable provisioning with chef server, specifying the chef server URL,
-    config.omnibus.chef_version = :latest
-    # config.omnibus.chef_version = '11.8.0'
-
-    # config.vm.provision :chef_client do |chef|
-    #   chef.chef_server_url = "https://api.opscode.com/organizations/alexv-ge"
-    #   chef.validation_key_path = "../.chef/alexv-ge-validator.pem"
-    #   # chef.validation_client_name = "testname001"
-    #   chef.node_name = "testname002"
-    #   chef.verbose_logging = false
-    #   chef.log_level = :info
-    #  end
-  end
-
+  # config.vm.define 'wsus_ad' do |config|
+  # end
 
 end
 
