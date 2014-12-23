@@ -5,28 +5,28 @@
 #                  http://technet.microsoft.com/en-us/library/dd939838(v=ws.10).aspx
     # Nice blog - http://smsagent.wordpress.com/tag/wsus-powershell/
 
-user 'TestAdmin123' do
+user node['wsus']['config']['admin_user'] do
   # username 'TestAdmin123'
-  password 'TestAdmin123456789!!'
+  password node['wsus']['config']['admin_pass']
   action :create
 end
 
-user 'TestUser123' do
+user node['wsus']['config']['basic_user'] do
   # username 'TestUser123'
-  password 'TestUser123456789!!'
+  password node['wsus']['config']['basic_pass']
   action :create
 end
 
-group 'WSUS Administrators' do
-  members 'TestAdmin123'
+group node['wsus']['config']['admin_group'] do
+  members node['wsus']['config']['admin_group_members']
 end
 
-group 'WSUS Reporters' do
-  members 'TestUser123'
+group node['wsus']['config']['reporter_group'] do
+  members node['wsus']['config']['reporter_group_members']
 end
 
 powershell_script "test testing of WSUS installation" do
-  code 'if ((Get-WindowsFeature -Name OOB-WSUS).installed){"hi"}'
+  code 'Import-Module ServerManager;if ((Get-WindowsFeature -Name OOB-WSUS).installed){"hi"}'
   # notifies :run, "powershell_script[configure_wsus_server]", :immediately
 end
 
@@ -141,7 +141,10 @@ powershell_script "configure_wsus_server" do
 
 
   EOH
-  # action :nothing
+  action :nothing
+
+  # guard_interpreter :powershell_script
+  # not_if 'the thing from the test block above'
 end
 
 # Codeplex plugin:

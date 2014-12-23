@@ -8,6 +8,16 @@
 # http://prajwaldesai.com/troubleshooting-wsus-3-0-sp2-on-windows-server/
 # http://technet.microsoft.com/en-us/library/dd939801%28v=ws.10%29.aspx
 
+
+
+#### Dec 2014 comment - this may be needed on a client
+### use search to see if sync has been done after wsus server was created/patched
+## https://support.microsoft.com/kb/2828185?wa=wsignin1.0
+Net stop wuauserv
+rd /s %windir%\softwaredistribution\
+Net start wuauserv
+
+
 include_recipe "wsus::gpo_tools"
 
 

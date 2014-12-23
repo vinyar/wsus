@@ -1,0 +1,10 @@
+
+# cookbook "chef-dev-workstation", :path => "../chef-dev-workstation/"
+# cookbook "chef-dev-workstation", git: "https://github.com/scarolan/chef-dev-workstation.git"
+# cookbook "windows_ad", :path => "cookbooks/windows_ad"
+
+cookbook "wsus", :path => "../wsus"
+
+source "https://supermarket.getchef.com"
+# site :opscode
+metadata

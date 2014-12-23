@@ -1,12 +1,6 @@
-# optional?
-# Vagrant.require_plugin "vagrant-berkshelf"
-# Vagrant.require_plugin "vagrant-chef-zero"
-# Vagrant.require_plugin "vagrant-omnibus"
-
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
-box_url = "~/Documents/ISO_BOX_etc/virtualbox-win2008r2-enterprise-provisionerless.box"
-box_name = 'win2k8r2-test'
+box_name = 'windows2008r2'
 
 network_wifi = 'en0: Wi-Fi (AirPort)'
 network_wired = 'en1: Thunderbolt Ethernet'
@@ -19,8 +13,8 @@ Vagrant.configure("2") do |config|
 
  config.vm.define 'wsus_server',primary: true do |config|
 
-    # config.berkshelf.enabled = true
-    # config.berkshelf.berksfile_path = "./Berksfile"
+    config.berkshelf.enabled = true
+    config.berkshelf.berksfile_path = "cookbooks/wsus_wrapper/Berksfile"
 
     # Chef-Zero plugin configuration
     # config.chef_zero.enabled = true
@@ -40,12 +34,12 @@ Vagrant.configure("2") do |config|
     config.vm.box = box_name
 
     # The url from where the 'config.vm.box' box will be fetched 
-    config.vm.box_url = box_url
+    # config.vm.box_url = box_url
 
     # Port forward WinRM and RDP
     config.vm.network :forwarded_port, { :guest=>3389, :host=>3389, :id=>"rdp"}#, :auto_correct=>true }
     config.vm.network :forwarded_port, { :guest=>5985, :host=>5985, :id=>"winrm"}#, :auto_correct=>true }
-    config.vm.network :private_network, ip: "192.168.33.10" # needed for Consultants/Contractors to spin up vagrant on VPN.
+    # config.vm.network :private_network, ip: "192.168.33.10" # needed for Consultants/Contractors to spin up vagrant on VPN.
 
     config.vm.provider :virtualbox do |p|
         p.gui = true
@@ -55,27 +49,32 @@ Vagrant.configure("2") do |config|
 
 
     # Share an additional folder to the guest VM. The first argument is
-    config.vm.synced_folder "../", "c:/cookbooks_path"
+    config.vm.synced_folder "../", "c:/cookbooks_path" 
+#test
+    config.vm.synced_folder '~/Documents/Projects/binaries', "c:/local_binaries"# if FileTest::directory?('~/Documents/Projects/binaries/wsus')
+
 
     # Provider-specific configuration so you can fine-tune various
     # backing providers for Vagrant. These expose provider-specific options.
-    config.vm.guest = :windows
-    config.windows.halt_timeout = 25
-    config.winrm.username = "vagrant"
-    config.winrm.password = "vagrant"
-    config.winrm.max_tries = 10
+    # config.vm.guest = :windows
+    # config.windows.halt_timeout = 25
+    # config.winrm.username = "vagrant"
+    # config.winrm.password = "vagrant"
+    # config.winrm.max_tries = 10
 
     #Set WinRM Timeout in seconds (Default 30)
-    config.winrm.timeout = 1800
+    # config.winrm.timeout = 1800
     # New veature in vagrant 1.6. Makes windows much easier.
     config.vm.communicator = "winrm"
 
 
     ## Enable provisioning with chef solo
     config.vm.provision :chef_solo do |chef|
-      chef.cookbooks_path = "../"
+      # chef.cookbooks_path = "../"
+      chef.log_level = :debug
       # chef.add_recipe "chef-dev-workstation::windows_setup"
-      chef.add_recipe "wsus::server"
+      # chef.add_recipe "wsus::server"
+      chef.add_recipe "wsus_wrapper"
       # chef.run_list  = ["recipe[ge_splunk]"]
 
     end
