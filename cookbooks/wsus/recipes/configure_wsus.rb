@@ -56,6 +56,11 @@ powershell_script "configure_wsus_server" do
     # This sets it just to do English (for multiple languages use collection)
     # $language = New-Object -Type System.Collections.Specialized.StringCollection
     # $language.Add("en")
+
+# below line is untested
+# #{node['wsus']['config']['primary']['languages']} | foreach {$language.Add("$_")}
+# $Configuration.SetEnabledUpdateLanguages($language)
+
     $Configuration.SetEnabledUpdateLanguages("en")
 
     # This commits your changes

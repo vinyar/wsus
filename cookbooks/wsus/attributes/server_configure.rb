@@ -10,3 +10,5 @@ default['wsus']['config']['admin_group_members'] = 'TestAdmin123'
 default['wsus']['config']['reporter_group'] = 'WSUS Reporters'
 default['wsus']['config']['reporter_group_members'] = 'TestUser123'
 
+# this can be an array = either standard [] or %w{}
+default['wsus']['config']['primary']['languages'] = 'en'

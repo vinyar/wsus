@@ -13,9 +13,9 @@
 #### Dec 2014 comment - this may be needed on a client
 ### use search to see if sync has been done after wsus server was created/patched
 ## https://support.microsoft.com/kb/2828185?wa=wsignin1.0
-Net stop wuauserv
-rd /s %windir%\softwaredistribution\
-Net start wuauserv
+# Net stop wuauserv
+# rd /s %windir%\softwaredistribution\
+# Net start wuauserv
 
 
 include_recipe "wsus::gpo_tools"
@@ -38,6 +38,8 @@ include_recipe "wsus::gpo_tools"
 #   end
 # end
 
+########### TODO: convert this info into a databag so this recipe can
+ # be ran with chef solo and more importantly with chef-zero
 wsus_srv = "http://10.0.0.116"
 # wsus_srv = "http://54.85.119.200"
 

@@ -1,0 +1,67 @@
+---
+driver: 
+  forward_agent: yes
+  name: vagrant
+  # customize:
+  #   memory: 2048
+  #   cpus: 2
+
+provisioner:
+  name: chef_zero
+  require_chef_omnibus: 11.16.4
+
+transport:
+  name: winrm
+
+platforms:
+- name: windows-2008R2
+  # transport:
+  #   max_threads: 20
+  # driver_config:
+  driver:
+    gui: true
+    # network:
+    # - ["forwarded_port", {guest: 3389, host: 53389}]
+    box: windows2008r2
+    box_url: https://s3-us-west-2.amazonaws.com/chef-box-cutter/windows/virtualbox4.3.20/eval-win2008r2-datacenter-nocm-1.0.2.box
+    vm_hostname:
+    network:
+    - ["private_network", {ip: "192.168.1.30"}]
+    customize:
+      memory: 2048
+      cpus: 2
+# - name: windows-2012R2
+#   driver_config:
+#     box: win2012r2-chef11.14.2-1
+#     box_url: https://s3-us-west-2.amazonaws.com/chef-box-cutter/windows/virtualbox4.3.20/eval-win2012r2-datacenter-nocm-1.0.2.box
+suites:
+- name: domain_controller
+  run_list:
+    - 'recipe[windows_ad::default]'
+  attributes:
+  excludes:
+    - windows-2012R2
+# - name: ad_wsus_server
+#   run_list:
+#     - 'recipe[wsus_wrapper::default]'
+#   attributes:
+#   excludes:
+#     - windows-2012R2
+# - name: standalone_wsus_server
+#   run_list:
+#     - 'recipe[wsus_wrapper::default]'
+#   attributes:
+#   excludes:
+#     - windows-2012R2
+# - name: ad_client
+#   run_list:
+#     - 'recipe[wsus_wrapper::client]'
+#   attributes:
+#   excludes:
+#     - windows-2012R2
+# - name: standalone_client
+#   run_list:
+#     - 'recipe[wsus_wrapper::client]'
+#   attributes:
+#   excludes:
+#     - windows-2012R2
