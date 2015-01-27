@@ -4,4 +4,8 @@ DEPENDENCIES
     metadata: true
 
 GRAPH
-  ad (0.0.1)
+  ad (0.0.3)
+    windows (>= 0.0.0)
+  chef_handler (1.1.6)
+  windows (1.36.1)
+    chef_handler (>= 0.0.0)

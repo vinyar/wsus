@@ -38,7 +38,8 @@ action :configure do
     code "dcpromo.exe /unattend:#{dcpromo_answer}"
     #add some kind of not_if here
     ## add notify to file resource (for template file) with action :delete
-    notifies :delete, "file[#{dcpromo_answer}]"
+    notifies :delete, "file[#{dcpromo_answer}]", :immediately
+    returns [0,4]
   end
 
   file dcpromo_answer do

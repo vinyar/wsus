@@ -32,28 +32,49 @@
 
 
 
-ad_domain_controller "install AD role" do
-  action :install
+# ad_domain_controller "install AD role" do
+#   action :install
+# end
+
+powershell_script "install_ad" do
+  code <<-EOH
+    import-module servermanager
+    if (!(get-windowsfeature adds-domain-controller)){Add-WindowsFeature ADDS-Domain-Controller}"
+    # not_if "something that can get a value from cmd /c or powreshell_script"
+    # "only_if { WMI::Win32_Service.find(:first, :conditions => {:name => 'chef-client'}).nil? "
+  EOH
 end
 
+# execute "install_ad" do
+#   command "servermanagercmd -install ADDS-Domain-Controller"
+#   returns 0
+#   returns 235
+# end
 
 ad_domain_controller node['ad']['domain_name'] do
   action :configure
   type node['ad']['type']
 
-  notifies :request, 'windows_reboot[60]'
+  # notifies :request, 'windows_reboot[60]'
+  # notifies :request_reboot, 'reboot[app_requires_reboot]'
+
   # require "pry";binding.pry
   # not_if {reboot_pending?}
 end
 
+# windows_reboot 60 do
+#   reason 'cause chef said so'
+#   # action :request
+#   action :nothing
+#   # only_if {reboot_pending?}
+# end
 
-windows_reboot 60 do
-  reason 'cause chef said so'
-  # action :request
-  action :nothing
-  # only_if {reboot_pending?}
-
+reboot "app_requires_reboot" do
+  action :request_reboot
+  reason "Need to reboot when the run completes successfully."
+  delay_mins 1
 end
+
 
 # fix syntax
 # notify "reboot" do

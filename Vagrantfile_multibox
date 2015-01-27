@@ -80,7 +80,8 @@ Vagrant.configure("2") do |config|
 
 
   config.vm.define 'wsus_ad' do |config|
-    # config.berkshelf.enabled = true
+    config.berkshelf.enabled = true
+    config.berkshelf.berksfile_path =  "./cookbooks/ad/Berksfile"
     # config.berkshelf.berksfile_path =  "./cookbooks/windows_ad/Berksfile"
     config.vm.box = 'windows2008r2'
     # config.vm.box_url = box_url
