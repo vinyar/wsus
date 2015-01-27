@@ -1,0 +1,29 @@
+{
+  "groupings": {
+  },
+  "attributes": {
+  },
+  "recipes": {
+  },
+  "recommendations": {
+  },
+  "license": "Apache 2.0",
+  "suggestions": {
+  },
+  "dependencies": {
+  },
+  "conflicting": {
+  },
+  "description": "Builds an Active Directory Domain Controller",
+  "long_description": "= DESCRIPTION:\n\n= REQUIREMENTS:\n\n= ATTRIBUTES:\n\n= USAGE:\n\n",
+  "providing": {
+  },
+  "platforms": {
+  },
+  "version": "0.0.1",
+  "maintainer": "Bryan McLellan",
+  "name": "ad",
+  "replacing": {
+  },
+  "maintainer_email": "btm@loftninjas.org"
+}

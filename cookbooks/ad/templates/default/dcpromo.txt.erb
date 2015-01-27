@@ -1,0 +1,40 @@
+[DCINSTALL]
+SafeModeAdminPassword=<%= @admin_password %>
+RebootOnCompletion=No
+
+<% if @type == "forest" -%>
+InstallDNS=yes
+NewDomain=forest
+NewDomainDNSName=<%= @domain_name %>
+DomainNetBiosName=<%= @netbios_name %>
+ReplicaOrNewDomain=domain
+ForestLevel=4
+DomainLevel=4
+
+<% elsif @type == "child" -%>
+NewDomain=child
+ReplicaOrNewDomain=domain
+ParentDomainDNSName=<%= @domain_name %>
+ChildName=<%= @child_name %>
+DomainNetBiosName=<%= @netbios_name %>
+SiteName=<%= @site_name %>
+UserName=<%= @user_name %>
+UserDomain=<%= @user_domain %>
+Password=<%= @user_password %>
+InstallDNS=yes
+CreateDNSDelegation=yes
+DNSDelegationUserName=<%= @dns_user_name %>
+DNSDelegationPassword=<%= @dns_user_password %>
+
+<% elsif @type == "replica" -%>
+ReplicaOrNewDomain=replica
+ReplicaDomainDNSName=<%= @domain_name %>
+SiteName=<%= @site_name %>
+ConfirmGC=yes 
+UserName=<%= @user_name %>
+UserDomain=<%= @user_domain %>
+Password=<%= @user_password %>
+InstallDNS=yes
+
+<% end -%>
+
