@@ -8,13 +8,13 @@
 user node['wsus']['config']['admin_user'] do
   # username 'TestAdmin123'
   password node['wsus']['config']['admin_pass']
-  action :create
+  # action :create
 end
 
 user node['wsus']['config']['basic_user'] do
   # username 'TestUser123'
   password node['wsus']['config']['basic_pass']
-  action :create
+  # action :create
 end
 
 group node['wsus']['config']['admin_group'] do

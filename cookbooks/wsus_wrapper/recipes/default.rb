@@ -10,11 +10,11 @@
 ## workaround to vagrant bug which I just filed - https://github.com/WinRb/vagrant-windows/issues/200
 
 
-batch 'make net share z' do
-  code 'net use z: \\\\vboxsrv\\c:_local_binaries'
-  guard_interpreter :powershell_script
-  not_if 'Get-WmiObject win32_networkconnection |?{$_.localname -eq "z:" -and $_.remotename -eq "\\\\vboxsrv\\c:_local_binaries"}'
-end
+# batch 'make net share z' do
+#   code 'net use z: \\\\vboxsrv\\c:_local_binaries'
+#   guard_interpreter :powershell_script
+#   not_if 'Get-WmiObject win32_networkconnection |?{$_.localname -eq "z:" -and $_.remotename -eq "\\\\vboxsrv\\c:_local_binaries"}'
+# end
 
 
 # note shared across ps sessions anyway

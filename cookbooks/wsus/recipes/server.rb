@@ -122,11 +122,11 @@ windows_package 'Windows Server Update Services 3.0 SP2-KB2828185' do
   installer_type :custom
   options node['wsus']['sp_installer_switches']
   action :install
-  # not_if ?? needed??
+  notifies :restart, 'service[WSUSService]' #, :immediately
 end
 
 service 'WSUSService' do
-  action :restart
+  action :nothing
 end
 
 include_recipe "wsus::configure_wsus"
